@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+  <title>LeetUp</title>
+</head>
+<body>
+  <!-- Header with logo and title -->
+  <header>
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14.5 2L5 12L8 14L10 12L12 14L19 7L14.5 2Z" fill="url(#gradient)"/>
+        <defs>
+          <linearGradient id="gradient" x1="5" y1="2" x2="19" y2="14" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#00e676"/>
+            <stop offset="1" stop-color="#00c853"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span>LeetUp</span>
+    </div>
+    <span class="version">v1.0.0</span>
+  </header>
+
+  <!-- Auth section: shows login button or user info -->
+  <section id="auth-section">
+    <!-- Login state -->
+    <div id="login-container">
+      <p class="login-hint">Paste a <a href="https://github.com/settings/tokens/new?scopes=repo&description=LeetUp" target="_blank">GitHub Personal Access Token</a> to connect.</p>
+      <div class="token-row">
+        <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx">
+        <button id="login-btn" class="primary-btn">Connect</button>
+      </div>
+      <div id="login-error" class="inline-error hidden"></div>
+    </div>
+    
+    <!-- Logged in state -->
+    <div id="user-container" class="hidden">
+      <div class="user-info">
+        <img id="user-avatar" src="" alt="Avatar">
+        <span id="user-name"></span>
+      </div>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </section>
+
+  <!-- Settings (only visible when logged in) -->
+  <section id="settings-section" class="hidden">
+    
+    <!-- Repository selector -->
+    <div class="setting-group">
+      <label>Repository</label>
+      <div class="repo-row">
+        <select id="repo-select">
+          <option value="">Loading...</option>
+        </select>
+        <button id="create-repo-btn" class="icon-btn" title="New Repository">+</button>
+      </div>
+      
+      <!-- Inline form for creating a new repo -->
+      <div id="new-repo-form" class="hidden">
+        <input type="text" id="new-repo-name" placeholder="Repository Name">
+        <label class="checkbox-label">
+          <input type="checkbox" id="new-repo-private" checked> Private
+        </label>
+        <div class="form-actions">
+          <button id="cancel-repo-btn" class="secondary-btn">Cancel</button>
+          <button id="submit-repo-btn" class="primary-btn">Create</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Folder structure -->
+    <div class="setting-group">
+      <label>Folder Structure</label>
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" name="structure" value="difficulty">
+          <span class="radio-custom"></span> By Difficulty
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="structure" value="topic">
+          <span class="radio-custom"></span> By Topic
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="structure" value="flat">
+          <span class="radio-custom"></span> Flat
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="structure" value="custom">
+          <span class="radio-custom"></span> Custom
+        </label>
+      </div>
+      <input id="custom-pattern" class="hidden" placeholder="{difficulty}/{number}-{title}/solution.{ext}">
+    </div>
+
+    <!-- Commit message template -->
+    <div class="setting-group">
+      <label>Commit Message</label>
+      <input id="commit-template" placeholder="✅ {number}. {title} [{difficulty}]">
+      <div class="variables">
+        Variables: 
+        <span class="var-hint">{number}</span> 
+        <span class="var-hint">{title}</span> 
+        <span class="var-hint">{difficulty}</span> 
+        <span class="var-hint">{language}</span> 
+        <span class="var-hint">{runtime}</span> 
+        <span class="var-hint">{memory}</span> 
+        <span class="var-hint">{tags}</span> 
+        <span class="var-hint">{date}</span>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="setting-group">
+      <label>Notifications</label>
+      <div class="toggle-row">
+        <span>Enable notifications</span>
+        <label class="switch">
+          <input type="checkbox" id="notif-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div id="notif-messages">
+        <input id="success-msg" placeholder="🎉 Pushed {title} to GitHub!">
+        <input id="failure-msg" placeholder="❌ Failed to push {title}: {error}">
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section id="stats-section" class="hidden">
+    <div class="stat-card">
+      <span class="stat-value" id="total-pushed">0</span>
+      <span class="stat-label">Pushed</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value" id="streak">0</span>
+      <span class="stat-label">Day Streak</span>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <button id="manual-sync" class="hidden primary-btn">⚡ Manual Sync</button>
+    <a href="https://github.com" target="_blank" id="github-link">View on GitHub ↗</a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

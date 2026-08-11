@@ -1,0 +1,25 @@
+# LeetUp OAuth Token Exchange Worker
+# ====================================
+#
+# Setup:
+#   1. Install wrangler: npm install -g wrangler
+#   2. Login to Cloudflare: npx wrangler login
+#   3. Set your GitHub OAuth App credentials:
+#      npx wrangler secret put GITHUB_CLIENT_ID
+#      npx wrangler secret put GITHUB_CLIENT_SECRET
+#   4. Deploy: npx wrangler deploy
+#
+# GitHub OAuth App Setup:
+#   1. Go to https://github.com/settings/developers
+#   2. Click "New OAuth App"
+#   3. Set Authorization callback URL to:
+#      https://<your-extension-id>.chromiumapp.org/
+#   4. Copy the Client ID and Client Secret
+
+name = "leetup-auth"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Environment variables (non-secret, or set via `wrangler secret put`)
+# [vars]
+# GITHUB_CLIENT_ID = "your_client_id_here"
