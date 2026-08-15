@@ -4,6 +4,8 @@
   console.log('[LeetUp] Injector loaded, hooking fetch and XHR');
 
   let lastSubmitData = null;
+  let lastSubmitId = null;
+  let lastRunId = null;
 
   const originalFetch = window.fetch;
   window.fetch = async function(...args) {
@@ -24,10 +26,18 @@
         } catch (e) {}
       }
 
-      if (typeof url === 'string' && (url.includes('/graphql') || url.includes('/check/') || url.includes('/submit/'))) {
+      if (typeof url === 'string' && (url.includes('/graphql') || url.includes('/check/') || url.includes('/submit/') || url.includes('/interpret_solution/'))) {
         const clonedResponse = response.clone();
         clonedResponse.json().then(data => {
-          checkAndPostSubmission(data);
+          if (url.includes('/submit/') && data && data.submission_id) {
+            lastSubmitId = String(data.submission_id);
+            console.log('[LeetUp] Captured submission ID:', lastSubmitId);
+          } else if (url.includes('/interpret_solution/') && data && data.interpret_id) {
+            lastRunId = String(data.interpret_id);
+            console.log('[LeetUp] Captured interpret ID:', lastRunId);
+          } else {
+            checkAndPostSubmission(data, url);
+          }
         }).catch(() => {});
       }
     } catch (err) {
@@ -51,7 +61,7 @@
           const responseText = this.responseText;
           if (responseText) {
             const data = JSON.parse(responseText);
-            checkAndPostSubmission(data);
+            checkAndPostSubmission(data, this._leetupUrl);
           }
         }
       } catch (err) {
@@ -61,13 +71,36 @@
     return originalXHRSend.apply(this, args);
   };
 
-  function checkAndPostSubmission(data) {
+  function checkAndPostSubmission(data, url = '') {
     try {
       let isAccepted = false;
       let submissionData = null;
 
+      // Extract submission/run ID from the polling URL if present (can be numeric or alphanumeric)
+      const idMatch = url.match(/\/submissions\/detail\/([a-zA-Z0-9\-_]+)\/check/);
+      const checkId = idMatch ? String(idMatch[1]) : null;
+
       // Check for XHR/Fetch /check/ response
       if (data && data.status_msg === 'Accepted' && data.state === 'SUCCESS') {
+        
+        // Payload-level checks: a Run contains code_answer or expected_code_answer, and lacks total_correct
+        if (data.code_answer !== undefined || data.expected_code_answer !== undefined || data.total_testcases === undefined) {
+          console.log('[LeetUp] Ignored Accepted response because payload indicates it is a Run (missing testcase counts or contains run answers)');
+          return;
+        }
+
+        // If this ID matches a known Run, block it immediately
+        if (checkId && lastRunId && checkId === lastRunId) {
+          console.log('[LeetUp] Ignored Accepted response because it matches lastRunId');
+          return;
+        }
+
+        // If we know this is a check URL but it doesn't match our last submit ID (and we have one), it's a Run
+        if (checkId && lastSubmitId && checkId !== lastSubmitId) {
+          console.log('[LeetUp] Ignored Accepted response for Run/Interpret (not a Submit)');
+          return;
+        }
+
         console.log('[LeetUp] Detected accepted submission (check format):', data);
         isAccepted = true;
         submissionData = data;
